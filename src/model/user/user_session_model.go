@@ -30,16 +30,16 @@ func NewUserSession()*UserSessionModel{
 /**
 	插入session数据
  */
-func (model *UserSessionModel)AddUserSession(userId int,sessionType int)(int64,error){
+func (model *UserSessionModel)AddUserSession(userId int,sessionType int)(*table_struct.TUserSession,error){
 	encryption := model.GetEncryption()
-	token,err := model.GetUserToken(strconv.Itoa(userId), encryption)
+	token,err := model.GetUserToken(userId, encryption)
 	if err!=nil{
-		return 0,err
+		return nil,err
 	}
 
-	updateTime := time.Now().Format("2006-01-02 15:04:05")
+	updateTime := time.Now()
 
-	session := &table_struct.T_USER_SESSION{
+	session := &table_struct.TUserSession{
 		UserId: userId,
 		SessionType: sessionType,
 		Encryption: encryption,
@@ -47,24 +47,57 @@ func (model *UserSessionModel)AddUserSession(userId int,sessionType int)(int64,e
 		UpdateTime:updateTime,
 	}
 
-	affected, err := model.DB.Insert(session)
-	return affected,err
+	_, err = model.DB.Insert(session)
+	return session,err
 }
 /**
 	获取用户的session数据
  */
-func (model *UserSessionModel)GetUserSession(userId int,sessionType int)(table_struct.T_USER_SESSION,bool,error){
-	session := table_struct.T_USER_SESSION{}
-	has,err := model.DB.Where("user_id = ?", userId).And("session_type = ",sessionType).Get(&session)
+func (model *UserSessionModel)GetUserSession(userId int,sessionType int)(*table_struct.TUserSession,bool,error){
+	session := &table_struct.TUserSession{}
+	has,err := model.DB.Where("user_id = ?", userId).And("session_type = ?",sessionType).Get(session)
 	return session,has,err
+}
+/**
+	更新用户session数据
+ */
+func (model *UserSessionModel)UpdateUserSession(userId int,sessionType int)(session *table_struct.TUserSession,err error){
+	token,err := model.GetUserToken(userId, model.GetEncryption())
+	if err!=nil{
+		return nil,err
+	}
+
+	session = &table_struct.TUserSession{
+		Token:token,
+		UpdateTime:time.Now(),
+	}
+
+	affected,err := model.DB.Where("user_id = ?",userId).And("session_type = ?",sessionType).Update(session)
+	if affected <= 0 || err!=nil{
+		return nil,err
+	}
+
+	return session,nil
+}
+/**
+	没有就新增数据，有就更新数据
+ */
+func (model *UserSessionModel)SavedSession(userId int,sessionType int)(session *table_struct.TUserSession,err error){
+	session,has,_ := model.GetUserSession(userId, sessionType)
+	if !has{
+		session,err = model.AddUserSession(userId,sessionType)
+	} else {
+		session,err = model.UpdateUserSession(userId, sessionType)
+	}
+	return session,err
 }
 /**
 	获取用户token数据
  */
-func (model *UserSessionModel)GetUserToken(userId string, encryStr string)(string,error){
+func (model *UserSessionModel)GetUserToken(userId int, encryStr string)(string,error){
 	nowTime := time.Now().Unix()
 
-	str := fmt.Sprintf("%s_%d", userId, nowTime)
+	str := fmt.Sprintf("%d_%d", userId, nowTime)
 	return model.DscStr(str, encryStr)
 }
 /**
