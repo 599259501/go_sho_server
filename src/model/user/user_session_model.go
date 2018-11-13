@@ -7,24 +7,23 @@ import
 	"time"
 	"fmt"
 	"table_struct"
-	"strconv"
-)
-
-const (
-	MINI_PROGRAM_SESSION_TYPE = 0
-	H5_SESSION_TYPE = 1
-	ANDROID_SESSION_TYPE = 2
+	"model"
 )
 
 type UserSessionModel struct{
 	DB *xorm.Engine
-	DataSource string
+	DataBaseName string
 }
 
 func NewUserSession()*UserSessionModel{
+	db,err := model.GDBManager.GetDBEngin(model.USER_DATASOURCE)
+	if err!=nil{
+		fmt.Println("GetDBEngin() has err=",err)
+	}
+
 	return &UserSessionModel{
-		DataSource: "",
-		DB:nil,
+		DataBaseName: "",
+		DB:db,
 	}
 }
 /**
