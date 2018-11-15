@@ -3,17 +3,15 @@ package login
 import
 (
 	"github.com/gin-gonic/gin"
-	"baselogic/verify_code"
-	"errors"
 	"baselogic/wx_helper"
+	"errors"
 	"model/user"
 	MODEL "model"
+	"github.com/sirupsen/logrus"
 )
 
 type MiniProgramLoginInfo struct{
-	UserName string
-	Password string
-	VerifyCode string
+	Code string
 }
 
 type MiniProgramSessionInfo struct{
@@ -41,8 +39,8 @@ func (loginService *MiniProgramLogin)CheckLogin(loginInfo interface{})(bool,erro
 	}
 	return true,nil
 }
-func (loginService *MiniProgramLogin) DoLogin(loginInfo interface{})(bool,error){
-	loginBody := loginInfo.(MiniProgramLoginInfo)
+func (loginService *MiniProgramLogin) DoLogin(loginInfo interface{})(bool,error,interface{}){
+	/*loginBody := loginInfo.(MiniProgramLoginInfo)
 	// 其次去检测用户对应的密码是否是正确的
 	loginHelper := NewCheckLoginHelper()
 	if !loginHelper.IsValidUser(loginBody.UserName, loginBody.Password){
@@ -53,8 +51,46 @@ func (loginService *MiniProgramLogin) DoLogin(loginInfo interface{})(bool,error)
 	if !verifyTool.CheckVerifyCode(loginBody.UserName, loginBody.VerifyCode){
 		return false,errors.New("验证码错误")
 	}
-	return true,nil
+	return true,nil*/
+
+	// 小程序登陆是根据code验证它的可靠性
+	loginBody := loginInfo.(MiniProgramLoginInfo)
+
+	helper := wx_helper.NewWxHelper()
+	sessionInfo, err :=helper.GetWxMiniSession(loginBody.Code)
+	if err!=nil{
+		logrus.Info("GetWxMiniSession() has err,err=",err)
+		return false, err,nil
+	}
+
+	// code 验证成功之后就可以插入session表了
+	// 根据openId 找到user_id
+	userModel := user.NewUserModel()
+	userInfo, isExists, err := userModel.FindUserByOpenId(sessionInfo.OpenId)
+	if err!=nil{
+		logrus.Info("FindUserByOpenId():has err=",err, ",openId=", sessionInfo.OpenId)
+		return false,err,nil
+	}
+
+	if !isExists{
+		return false,nil,nil
+	}
+
+	model := user.NewUserSession()
+	tSession, err := model.AddUserSession(userInfo.Id, MODEL.MINI_PROGRAM_SESSION_TYPE)
+	if err!=nil{
+		logrus.Info("DoLogin(): addUserSession has err=", err)
+		return false,err,nil
+	}
+
+	return true,nil,tSession
 }
-func (loginService *MiniProgramLogin) AfterLogin(cxt  *gin.Context,params ...string){
-	// 这里主要是登陆后刷新用户登陆态，如果是网站登陆接口的 话
+func (loginService *MiniProgramLogin) AfterLogin(cxt  *gin.Context,params map[string]interface{}){
+	// 这里主要是登陆后刷新用户登陆态，如果是网站登陆接口的话
+	if _,ok := params["session"];!ok{
+		return
+	}
+
+	sessionInfo := params["session"].(MiniProgramSessionInfo)
+
 }

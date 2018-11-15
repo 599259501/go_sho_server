@@ -1,9 +1,15 @@
 package wx_helper
 
 import (
-	"github.com/imroc"
+	"github.com/imroc/req"
+	"fmt"
+	simplejson "github.com/bitly/go-simplejson"
+	"github.com/pkg/errors"
 )
 type WxSessionInfo struct{
+	OpenId string `json:"open_id"`
+	SessionKey string `json:"session_key"`
+	UnionId string `json:"union_id"`
 }
 
 type WxHelper struct{}
@@ -11,5 +17,22 @@ func NewWxHelper()*WxHelper{
 	return &WxHelper{}
 }
 func (helper *WxHelper)GetWxMiniSession(code string)(WxSessionInfo,error){
-	return WxSessionInfo{},nil
+	js2SessionUrl := fmt.Sprintf(JSSESSION_URL)
+
+	session := WxSessionInfo{}
+	rsp, err :=req.New().Get(js2SessionUrl)
+	if err!=nil{
+		fmt.Println("req url=",js2SessionUrl,",err=",err)
+		return session,nil
+	}
+
+	js, _ := simplejson.NewJson(rsp.Bytes())
+	if js.Get("errcode").MustInt() != 0 {
+		return session,errors.New(js.Get("errmsg").MustString())
+	}
+
+	session.OpenId = js.Get("openid").MustString()
+	session.SessionKey = js.Get("session_key").MustString()
+	session.UnionId = js.Get("unionid").MustString()
+	return session,err
 }

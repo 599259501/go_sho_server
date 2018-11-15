@@ -22,10 +22,20 @@ func NewUserModel()*UserModel{
 		DB:db,
 	}
 }
-
+// 根据用户唯一标识查找用户信息
 func (model *UserModel)FindUserInfo(userKey string)(*table_struct.TUser,bool,error){
 	userInfo := &table_struct.TUser{}
 	has,err :=model.DB.Where("name=?",userKey).Get(userInfo)
+	if err!=nil{
+		return nil,has,err
+	}
+
+	return userInfo,has,nil
+}
+// 根据用户openId获取用户信息
+func (model *UserModel)FindUserByOpenId(openId string)(*table_struct.TUser,bool,error){
+	userInfo := &table_struct.TUser{}
+	has,err :=model.DB.Where("open_id=?",openId).Get(userInfo)
 	if err!=nil{
 		return nil,has,err
 	}

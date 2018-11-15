@@ -6,24 +6,23 @@ import(
 	"baselogic"
 )
 func DoLogin(cxt * gin.Context){
-	userName := cxt.DefaultPostForm("user_name", "")
-	password := cxt.DefaultPostForm("password", "") // 这里前端必须用md5加密过密码
-	loginType := cxt.DefaultPostForm("login_type", login.MINI_PROGRAM)
-	verifyCode := cxt.DefaultPostForm("verify_code", "")
-
-	if userName == "" || password == "" || verifyCode == ""{
-		baselogic.JResponse(cxt, login.PARAM_ERROR_CODE,nil, "用户名/密码/验证码不能为空")
+	code := cxt.DefaultPostForm("code", "")
+	if code == ""{
+		baselogic.JResponse(cxt, login.PARAM_ERROR_CODE,nil, "code参数不能为空")
 		return
 	}
-	isLogin,err := login.GLoginManager.ProcessLoginByType(userName,password,verifyCode,loginType)
+	isLogin,err,extraInfo := login.GLoginManager.ProcessLoginByType(map[string]interface{}{
+		"code":code,
+	})
 	if !isLogin{
 		baselogic.JResponse(cxt, -100,nil, err.Error())
 		return
 	}
-
 	// 登陆成功就刷新状态
-	loginHandler := login.GLoginManager.GetLoginMethod(loginType)
-	loginHandler.AfterLogin(cxt, userName, password)
+	loginHandler := login.GLoginManager.GetLoginMethod(login.MINI_PROGRAM)
+	loginHandler.AfterLogin(cxt, map[string]interface{}{
+		"session": extraInfo,
+	})
 
 	baselogic.JResponse(cxt, login.SUCCESS_CODE,nil, "ok")
 }

@@ -17,8 +17,8 @@ func init(){
 type ILogin interface{
 	// 检测登陆态
 	CheckLogin(loginInfo interface{})(bool,error)
-	DoLogin(loginInfo interface{})(bool,error)
-	AfterLogin(cxt  *gin.Context,params ...string)
+	DoLogin(loginInfo interface{})(bool,error,interface{})
+	AfterLogin(cxt  *gin.Context,params map[string]interface{})
 }
 
 
@@ -47,26 +47,35 @@ func (manager *LoginManager)GetLoginMethod(methodName string)ILogin{
 	}
 	return method
 }
-func (manager *LoginManager)ProcessLoginByType(userName,password,verifyCode,loginType string)(bool,error){
+func (manager *LoginManager)ProcessLoginByType(params map[string]interface{})(bool,error,interface{}){
+	loginType := MINI_PROGRAM
+	if _, ok := params["loginType"];ok{
+		loginType = params["loginType"].(string)
+	}
+
 	loginHandler := manager.GetLoginMethod(loginType)
 	if loginHandler == nil{
-		return false,errors.New("not support login")
+		return false,errors.New("not support login"),nil
 	}
 
 	isLogin := false
 	var err error
 	switch loginType {
 	case MINI_PROGRAM:
-			isLogin, err = loginHandler.DoLogin(MiniProgramLoginInfo{
-				UserName:userName,
-				Password:password,
-				VerifyCode:verifyCode,
-			})
+		code := ""
+		if _,ok := params["code"];ok{
+			code = params["code"].(string)
+		}
+		isLogin, err,sessionInfo := loginHandler.DoLogin(MiniProgramLoginInfo{
+			Code:code,
+		})
+
+		return isLogin,err,sessionInfo
 	default:
 		err = errors.New("not support logintype")
 	}
 
-	return isLogin,err
+	return isLogin,err,nil
 }
 
 
