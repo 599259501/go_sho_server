@@ -5,6 +5,7 @@ import (
 	"fmt"
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/pkg/errors"
+	"utils"
 )
 type WxSessionInfo struct{
 	OpenId string `json:"open_id"`
@@ -12,12 +13,18 @@ type WxSessionInfo struct{
 	UnionId string `json:"union_id"`
 }
 
-type WxHelper struct{}
+type WxHelper struct{
+	AppId string
+	Secert string
+}
 func NewWxHelper()*WxHelper{
-	return &WxHelper{}
+	return &WxHelper{
+		AppId: utils.GetEnv("APP_ID", ""),
+		Secert: utils.GetEnv("APP_SECERT", ""),
+	}
 }
 func (helper *WxHelper)GetWxMiniSession(code string)(WxSessionInfo,error){
-	js2SessionUrl := fmt.Sprintf(JSSESSION_URL)
+	js2SessionUrl := fmt.Sprintf(JSSESSION_URL,helper.AppId, helper.Secert, code)
 
 	session := WxSessionInfo{}
 	rsp, err :=req.New().Get(js2SessionUrl)

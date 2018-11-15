@@ -8,6 +8,7 @@ import
 	"model/user"
 	MODEL "model"
 	"github.com/sirupsen/logrus"
+	"fmt"
 )
 
 type MiniProgramLoginInfo struct{
@@ -15,8 +16,8 @@ type MiniProgramLoginInfo struct{
 }
 
 type MiniProgramSessionInfo struct{
-	UserId int
-	AccessToken string
+	UserId int `json:"user_id"`
+	AccessToken string `json:"access_token"`
 }
 
 type MiniProgramLogin struct{}
@@ -86,11 +87,4 @@ func (loginService *MiniProgramLogin) DoLogin(loginInfo interface{})(bool,error,
 	return true,nil,tSession
 }
 func (loginService *MiniProgramLogin) AfterLogin(cxt  *gin.Context,params map[string]interface{}){
-	// 这里主要是登陆后刷新用户登陆态，如果是网站登陆接口的话
-	if _,ok := params["session"];!ok{
-		return
-	}
-
-	sessionInfo := params["session"].(MiniProgramSessionInfo)
-
 }

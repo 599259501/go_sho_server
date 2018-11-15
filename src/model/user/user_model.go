@@ -42,3 +42,7 @@ func (model *UserModel)FindUserByOpenId(openId string)(*table_struct.TUser,bool,
 
 	return userInfo,has,nil
 }
+// 插入用户数据
+func (model *UserModel)AddMiniProgramUser(openId string){
+	
+}

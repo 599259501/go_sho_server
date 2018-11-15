@@ -4,15 +4,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"router/v1"
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
+	_ "github.com/sirupsen/logrus"
 	"logging"
 	"utils"
+	"fmt"
 )
 
 func main(){
 	// 初始化.env配置文件
 	if err := InitEnvFile();err!=nil {
-		log.Fatal("Error loading .env file,err=",err)
+		fmt.Println("Error loading .env file,err=",err)
 		return
 	}
 	// 初始化日志信息
