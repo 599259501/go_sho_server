@@ -1,0 +1,2 @@
+{"level":"info","msg":"RegisterMiniProgramUser() has err=crypto/aes: invalid key size 64","time":"2018-11-16T23:11:36+08:00"}
+{"level":"info","msg":"DoLogin(): addUserSession has err=crypto/aes: invalid key size 64","time":"2018-11-16T23:18:40+08:00"}

@@ -12,5 +12,6 @@ func JResponse(cxt *gin.Context,code int,data interface{},msg string)*gin.Contex
 		"code": code,
 		"data": data,
 	})
+	cxt.Abort()
 	return cxt
 }

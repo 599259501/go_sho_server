@@ -67,6 +67,7 @@ func (model *UserSessionModel)UpdateUserSession(userId int,sessionType int)(sess
 	}
 
 	session = &table_struct.TUserSession{
+		UserId: userId,
 		Token:token,
 		UpdateTime:time.Now(),
 	}
@@ -82,7 +83,11 @@ func (model *UserSessionModel)UpdateUserSession(userId int,sessionType int)(sess
 	没有就新增数据，有就更新数据
  */
 func (model *UserSessionModel)SavedSession(userId int,sessionType int)(session *table_struct.TUserSession,err error){
-	session,has,_ := model.GetUserSession(userId, sessionType)
+	session,has,err := model.GetUserSession(userId, sessionType)
+
+	if err!=nil{
+		return session,err
+	}
 	if !has{
 		session,err = model.AddUserSession(userId,sessionType)
 	} else {
@@ -97,19 +102,19 @@ func (model *UserSessionModel)GetUserToken(userId int, encryStr string)(string,e
 	nowTime := time.Now().Unix()
 
 	str := fmt.Sprintf("%d_%d", userId, nowTime)
-	return model.DscStr(str, encryStr)
+	return model.EncryStr(str, encryStr)
 }
 /**
 	加密用户token数据
  */
-func (model *UserSessionModel)DscStr(str string,encryption string) (string,error){
-	return function.AesDecryStr(str,encryption)
+func (model *UserSessionModel)EncryStr(str string,encryption string) (string,error){
+	return function.AesEncryStr(str,encryption)
 }
 /**
 	获取用户token加密串
  */
 func (model *UserSessionModel)GetEncryption()string{
-	str, _ := function.GetRandStr(64)
+	str, _ := function.GetRandStr(32)
 	return str
 }
 

@@ -6,6 +6,10 @@ import
 	"table_struct"
 	"fmt"
 	"model"
+	"time"
+	"baselogic/wx_helper"
+	"github.com/sirupsen/logrus"
+	"errors"
 )
 type UserModel struct{
 	DB *xorm.Engine
@@ -43,6 +47,17 @@ func (model *UserModel)FindUserByOpenId(openId string)(*table_struct.TUser,bool,
 	return userInfo,has,nil
 }
 // 插入用户数据
-func (model *UserModel)AddMiniProgramUser(openId string){
-	
+func (model *UserModel)AddMiniProgramUser(wxSessionInfo wx_helper.WxSessionInfo)(userId int,err error){
+	userInfo := table_struct.TUser{
+		OpenId: wxSessionInfo.OpenId,
+		CreateTime: time.Now(),
+	}
+
+	if model.DB == nil{
+		logrus.Info("AddMiniProgramUser(): model db is nil")
+		return 0,errors.New("model db is nil")
+	}
+	_,err = model.DB.Insert(&userInfo)
+
+	return userInfo.Id,err
 }

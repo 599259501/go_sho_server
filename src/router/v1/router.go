@@ -12,6 +12,7 @@ func InitRouter(router *gin.Engine){
 	{
 		v1.POST("/mini_login", controllers.DoLogin)
 
-		v1.Use(middares.CheckMiniProgramLoginInfo()).POST("/get_home_data", controllers.GetHomePageData)
+		v1.Use(middares.CheckMiniProgramLoginInfo())
+		v1.POST("/get_home_data", controllers.GetHomePageData)
 	}
 }

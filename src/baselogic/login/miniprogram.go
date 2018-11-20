@@ -8,7 +8,12 @@ import
 	"model/user"
 	MODEL "model"
 	"github.com/sirupsen/logrus"
+	"stores"
+	"table_struct"
 	"fmt"
+	"time"
+	"utils"
+	"strconv"
 )
 
 type MiniProgramLoginInfo struct{
@@ -30,12 +35,13 @@ func (loginService *MiniProgramLogin)CheckLogin(loginInfo interface{})(bool,erro
 	// 这里要做的第一件事情就是校验用户session是否合法，如果不合法就要求用户重新登录
 	model := user.NewUserSession()
 	// todo 这里要做的事情就是检测用户的
+	fmt.Println("sessionInfo=", sessionInfo)
 	userSession, hasSession, err := model.GetUserSession(sessionInfo.UserId, MODEL.MINI_PROGRAM_SESSION_TYPE)
 	if !hasSession || err!=nil{
 		return false,err
 	}
-
-	if userSession.Token != sessionInfo.AccessToken {
+	sessionExpires,_ := strconv.ParseInt(utils.GetEnv("SESSION_EXPIRES", "0"),10,64)
+	if userSession.Token != sessionInfo.AccessToken || (time.Now().Unix()-userSession.UpdateTime.Unix()) > sessionExpires{
 		return false,errors.New("access_token校验不通过")
 	}
 	return true,nil
@@ -73,12 +79,20 @@ func (loginService *MiniProgramLogin) DoLogin(loginInfo interface{})(bool,error,
 		return false,err,nil
 	}
 
+	tSession := &table_struct.TUserSession{}
 	if !isExists{
-		return false,nil,nil
+		// 如果用户信息不存在就注册&加上session信息
+		userStore := stores.NewUserStore()
+		tSession,err = userStore.RegisterMiniProgramUser(sessionInfo, true)
+		if err!=nil{
+			logrus.Info("RegisterMiniProgramUser() has err=",err)
+			return false,err,nil
+		}
 	}
 
 	model := user.NewUserSession()
-	tSession, err := model.AddUserSession(userInfo.Id, MODEL.MINI_PROGRAM_SESSION_TYPE)
+	tSession, err = model.SavedSession(userInfo.Id, MODEL.MINI_PROGRAM_SESSION_TYPE)
+	fmt.Println("tSession=", tSession)
 	if err!=nil{
 		logrus.Info("DoLogin(): addUserSession has err=", err)
 		return false,err,nil

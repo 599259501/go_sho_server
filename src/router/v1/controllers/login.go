@@ -21,14 +21,7 @@ func DoLogin(cxt * gin.Context){
 	}
 	userSession := &table_struct.TUserSession{}
 	// 如果是第一次登陆的用户，就注册用户信息
-	if !isLogin && err == nil{
-		// 先注册用户的登陆信息
-
-		// 插入用户的session信息
-
-	} else {
-		userSession = extraInfo.(*table_struct.TUserSession)
-	}
+	userSession = extraInfo.(*table_struct.TUserSession)
 	// 登陆成功就刷新状态
 	loginHandler := login.GLoginManager.GetLoginMethod(login.MINI_PROGRAM)
 	loginHandler.AfterLogin(cxt, map[string]interface{}{
@@ -36,7 +29,7 @@ func DoLogin(cxt * gin.Context){
 	})
 
 	baselogic.JResponse(cxt, login.SUCCESS_CODE,login.MiniProgramSessionInfo{
-		UserId: userSession.Id,
+		UserId: userSession.UserId,
 		AccessToken: userSession.Token,
 	}, "ok")
 }

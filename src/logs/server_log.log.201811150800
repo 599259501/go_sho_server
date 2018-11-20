@@ -1,0 +1,10 @@
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: weGuHA04582068 ]","time":"2018-11-15T13:40:58+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: Pq25va00143116 ]","time":"2018-11-15T14:23:34+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: i4KNha00262153 ]","time":"2018-11-15T14:23:46+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: GboSKA01512154 ]","time":"2018-11-15T14:42:31+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: pHWN0a02292271 ]","time":"2018-11-15T14:43:49+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: eTfjhA04332270 ]","time":"2018-11-15T14:47:13+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid appid, hints: [ req_id: i2Vg5a05653119 ]","time":"2018-11-15T14:49:25+08:00"}
+{"level":"info","msg":"GetWxMiniSession() has err,err=invalid code, hints: [ req_id: nlkh70640sha1 ]","time":"2018-11-15T14:50:40+08:00"}
+{"level":"info","msg":"FindUserByOpenId():has err=dial tcp 127.0.0.1:3306: connectex: No connection could be made because the target machine actively refused it.,openId=oRpLT5DZNpkDIfjQtXcxS7YZnUK4","time":"2018-11-15T14:52:53+08:00"}
+{"level":"info","msg":"FindUserByOpenId():has err=Error 1054: Unknown column 'open_id' in 'where clause',openId=oRpLT5DZNpkDIfjQtXcxS7YZnUK4","time":"2018-11-15T14:53:49+08:00"}
